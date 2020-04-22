@@ -5,13 +5,14 @@ Almost Copy From XUE BIN PENG's AWR(MIT License)
 
 '''
 
+
 import os.path as osp, shutil, time, atexit, os, subprocess
 
 class Logger:
     class Entry:
         def __init__(self, val, quiet=False):
-            self.val = vals
-            self.quiet= quiet
+            self.val = val
+            self.quiet = quiet
             return
 
     def print(str):
@@ -26,7 +27,7 @@ class Logger:
         self.output_file = None
         self.first_row = True
         self.log_headers = []
-        self.log_cuurent_row = {}
+        self.log_current_row = {}
         self._dump_str_template = ""
         self._max_key_len = 0
         return
@@ -40,6 +41,9 @@ class Logger:
         return
 
     def configure_output_file(self, filename=None):
+        """
+        Set output directory to d, or to /tmp/somerandomnumber if d is None
+        """
         self.first_row = True
         self.log_headers = []
         self.log_current_row = {}
@@ -47,7 +51,6 @@ class Logger:
         output_path = filename or "output/log_%i.txt"%int(time.time())
 
         out_dir = os.path.dirname(output_path)
-
         if not os.path.exists(out_dir) and Logger.is_root():
             os.makedirs(out_dir)
 
@@ -60,11 +63,13 @@ class Logger:
         return
 
     def log_tabular(self, key, val, quiet=False):
-
+        """
+        Log a value of some diagnostic
+        Call this once for each diagnostic quantity, each iteration
+        """
         if self.first_row and key not in self.log_headers:
             self.log_headers.append(key)
             self._max_key_len = max(self._max_key_len, len(key))
-
         else:
             assert key in self.log_headers, "Trying to introduce a new key %s that you didn't include in the first iteration"%key
         self.log_current_row[key] = Logger.Entry(val, quiet)
@@ -72,7 +77,7 @@ class Logger:
 
     def get_num_keys(self):
         return len(self.log_headers)
-        
+
     def print_tabular(self):
         """
         Print all of the diagnostics from the current iteration

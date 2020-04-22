@@ -122,7 +122,7 @@ class HumanoidCMUImitation(base.Task):
     super(HumanoidCMUImitation, self).__init__(random=random)
 
     self.reference_data = None
-    self.num_frame = None
+    self.num_frame = 0.0
     self.max_frame = None
 
   def initialize_episode(self, physics):
@@ -147,7 +147,7 @@ class HumanoidCMUImitation(base.Task):
   def get_observation(self, physics):
     """Returns a set of egocentric features."""
     obs = collections.OrderedDict()
-    obs['phase'] = self.num_frame/self.max_frame
+    obs['phase'] = np.array([self.num_frame/self.max_frame])
     obs['joint_angles'] = physics.joint_angles()
     #obs['head_height'] = physics.head_height()
     #obs['extremities'] = physics.extremities()

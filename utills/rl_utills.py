@@ -9,12 +9,12 @@ def mlp(input_size, hidden_size, output_size, layer_size, act,out_act=nn.Identit
     for i in range(layer_size):
         ac = act if i<layer_size-1 else out_act
         if i ==0:
-            layers += [nn.Linear(input_size, hidden_size),ac()]
+            layers += [nn.Linear(input_size, hidden_size[i]),ac()]
 
         elif i==layer_size-1:
-            layers += [nn.Linear(hidden_size, output_size),ac()]
+            layers += [nn.Linear(hidden_size[i-1], output_size),ac()]
         else:
-            layers += [nn.Linear(hidden_size, hidden_size),ac()]
+            layers += [nn.Linear(hidden_size[i-1], hidden_size[i]),ac()]
 
     return nn.Sequential(*layers)
 
@@ -26,7 +26,7 @@ def calculate_gae(masks,rewards,old_values, args):
 
     advantages = torch.zeros_like(masks)
     rewards2go = torch.zeros_like(masks)
-    old_values = old_values.squeeze(-1)
+    old_values = old_values.squeeze(1)
 
     for i in reversed(range(0,len(masks))):
         if masks[i]==0:
@@ -53,7 +53,7 @@ def calculate_gae(masks,rewards,old_values, args):
 def surrogate_loss(actor, old_policy_log,
                    advantages_samples, states_samples,  actions_samples,
                    mini_batch_index):
-    mu, std = actor(torch.Tensor(states_samples))
+    mu, std = actor(states_samples)
     new_policy_samples = actor.get_log_prob(actions_samples, mu, std)
     old_policy_samples = old_policy_log[mini_batch_index]
     ratio = torch.exp(new_policy_samples - old_policy_samples)

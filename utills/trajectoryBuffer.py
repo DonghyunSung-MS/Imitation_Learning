@@ -12,7 +12,7 @@ class Trajectory:
         self.states.append(state)
         self.actions.append(action)
         self.rewards.append(reward)
-        self.masks.append(reward)
+        self.masks.append(mask)
 
 
     def covert_time_step_data(self, time_step):
@@ -22,8 +22,7 @@ class Trajectory:
             if tmp_state is None:
                 tmp_state = v
             else:
-                tmp_state = np.hstack([state, v])
-
+                tmp_state = np.hstack([tmp_state, v])
         tmp_reward = time_step.reward
         tmp_mask = 1.0 if not time_step.last() else 0.0
 

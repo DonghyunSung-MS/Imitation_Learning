@@ -1,9 +1,11 @@
+from utills.rl_utills import *
 
 class PPOActor(nn.Module):
     def __init__(self, input_dim, output_dim, args):
         super().__init__()
-        self.a_net = mlp(input_dim, args.hidden_size, output_dim, args.layer_size, nn.Tanh)
+        self.a_net = mlp(input_dim, args.hidden_size, output_dim, len(args.hidden_size)+1, nn.Tanh)
         #print(self.a_net)
+        self.gpu = args.gpu
 
     def forward(self, x):
         # input -> output(mean of torque+std(constant))
@@ -16,7 +18,10 @@ class PPOActor(nn.Module):
     def get_action(self, mu, std):
         normal = Normal(mu, std)
         action = normal.sample()
-        return action.data.numpy()
+        if self.gpu:
+            return action.data.cpu().numpy()
+        else:
+            return action.data.numpy()
 
     def get_log_prob(self, actions, mu, std):
         normal = Normal(mu, std)
@@ -26,7 +31,7 @@ class PPOActor(nn.Module):
 class PPOCritic(nn.Module):
     def __init__(self, input_dim, args):
         super().__init__()
-        self.c_net = mlp(input_dim, args.hidden_size, 1, args.layer_size, nn.Tanh)
+        self.c_net = mlp(input_dim, args.hidden_size, 1, len(args.hidden_size)+1, nn.Tanh)
         #print(self.c_net)
 
 
