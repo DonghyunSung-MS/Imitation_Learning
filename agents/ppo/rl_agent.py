@@ -64,6 +64,7 @@ class PPOAgent:
         for iter in range(self.max_iter):
             self.history = trajBuff.Trajectory()
             sample_num, avg_train_return, avg_steps = self._rollout()
+            #print(len(self.history.states))
             total_samples += sample_num
             wall_time = time.time() - start_time
             wall_time /= 60 * 60 # store time in hours
@@ -93,7 +94,7 @@ class PPOAgent:
         rewards2go, advantages = rl_utills.calculate_gae(masks, rewards, old_values, self)
 
         mu, std = self._actor(torch.Tensor(states).to(self.dev))
-        old_policy_log = self._actor.get_log_prob(actions.to(self.dev), mu, std)
+        old_policy_log = self._actor.get_log_prob(actions.to(self.dev), mu, std).squeeze(1)
         mse = torch.nn.MSELoss()
 
         num_sample = len(rewards)
@@ -119,11 +120,13 @@ class PPOAgent:
 
                 #Monte
                 critic_loss = mse(new_values_samples, rewards2go_samples)
-
+                #print(new_values_samples.shape, rewards2go_samples.shape)
                 #Surrogate Loss
+
                 actor_loss, ratio = rl_utills.surrogate_loss(self._actor, old_policy_log.detach(),
                                    advantages_samples, states_samples,  actions_samples,
                                    mini_batch_index)
+                #print(actor_loss.shape)
                 ratio_clipped = torch.clamp(ratio, 1-self.clip_param, 1+self.clip_param)
                 actor_loss = -torch.min(actor_loss,ratio_clipped*advantages_samples).mean()
                 num += 1

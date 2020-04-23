@@ -7,13 +7,18 @@ class Trajectory:
         self.actions = []
         self.rewards = []
         self.masks = []
-
+        self.clear()
+        
     def store_history(self, action, state, reward, mask):
         self.states.append(state)
         self.actions.append(action)
         self.rewards.append(reward)
         self.masks.append(mask)
 
+    def clear(self):
+        for key, vals in vars(self).items():
+            if type(vals) is list:
+                vals.clear()
 
     def covert_time_step_data(self, time_step):
         """convert time_step data(DeepMind style) to OpenAI Gym style"""
