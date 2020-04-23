@@ -20,7 +20,7 @@ class ReferenceData:
             tmp = collections.OrderedDict()
             tmp['initialize_episode'] = qpos
             tmp['joint_angles'] = env.physics.joint_angles()
-            tmp['joint_velocity'] = self.converted.qvel[7:, i].copy()
+            tmp['joint_velocity'] = self.converted.qvel[6:, i].copy()
 
             with env.physics.reset_context():
                 env.physics.data.qpos[:] = qpos

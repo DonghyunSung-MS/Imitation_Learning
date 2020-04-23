@@ -146,9 +146,12 @@ class HumanoidCMUImitation(base.Task):
 
   def get_observation(self, physics):
     """Returns a set of egocentric features."""
+    #print(physics.named.data.qvel.shape)
+    #print(physics.named.data.qpos.shape)
     obs = collections.OrderedDict()
     obs['phase'] = np.array([self.num_frame/self.max_frame])
     obs['joint_angles'] = physics.joint_angles()
+    obs['joint_velocity'] = physics.named.data.qvel[6:].copy()
     #obs['head_height'] = physics.head_height()
     #obs['extremities'] = physics.extremities()
     ori = physics.torso_vertical_orientation()
@@ -157,6 +160,11 @@ class HumanoidCMUImitation(base.Task):
     #obs['com_velocity'] = physics.center_of_mass_velocity()
     #obs['velocity'] = physics.velocity()
     return obs
+  def PD_torque(self, p_out, j_vel):
+      #print(j_vel.shape, p_out.shape, self.reference_data(self.num_frame)["joint_angles"].shape)
+      kp = 0.1
+      kv = 0.1
+      return kp*(self.reference_data(self.num_frame)["joint_angles"] - p_out) - kv*j_vel
 
   def get_reward(self, physics):
     """Returns a reward to the agent."""
@@ -186,6 +194,8 @@ class HumanoidCMUImitation(base.Task):
       move = (5*move + 1) / 6
       '''
     """ imitation  reward"""
+
+
     def reward_normalize(a, b, weight):
         return math.exp(weight *np.sum(np.square(a, b)))
     # cyclic motion
@@ -204,7 +214,7 @@ class HumanoidCMUImitation(base.Task):
 
     #Joint velocity reward
     ref_jvel = self.reference_data(self.num_frame)['joint_velocity']
-    cur_jvel = physics.data.qvel[7:].copy()
+    cur_jvel = physics.data.qvel[6:].copy()
     imit_vel_reward = reward_normalize(ref_jvel, cur_jvel, -0.1)
 
     #End effector(extremities) reward

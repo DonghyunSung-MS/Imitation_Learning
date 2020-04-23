@@ -158,14 +158,17 @@ class PPOAgent:
             total_reward_per_ep = 0
             time_step = self._env.reset()
             s, _ , __ = self.history.covert_time_step_data(time_step)
+            j_vel = time_step.observation["joint_velocity"]
             s_3d = np.reshape(s, [1, self.state_dim])
             while not time_step.last():
                 tic = time.time()
                 mu, std = self._actor(torch.Tensor(s_3d).to(self.dev))
-                action = self._actor.get_action(mu, std)
-                time_step = self._env.step(action)
+                p_out = self._actor.get_action(mu, std)
+                pd_torque = self._env._task.PD_torque(p_out,j_vel)
+                time_step = self._env.step(pd_torque)
+                j_vel = time_step.observation["joint_velocity"]
                 s_, r , m = self.history.covert_time_step_data(time_step)
-                self.history.store_history(action, s_3d, r, m)
+                self.history.store_history(p_out, s_3d, r, m)
                 s = s_
                 s_3d = np.reshape(s, [1, self.state_dim])
                 total_reward_per_ep += r
