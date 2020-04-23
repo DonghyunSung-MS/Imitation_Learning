@@ -22,7 +22,7 @@ from __future__ import print_function
 import collections
 import math
 
-
+from dm_control import mjcf
 from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
@@ -67,6 +67,11 @@ def walk(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
 
 class Physics(mujoco.Physics):
   """Physics simulation with additional features for the humanoid_CMU domain."""
+
+  def domain_randomizers(self, mjcf_model):
+      debug_context = mjcf.debugging.DebugContext()
+      xml_string = mjcf_model.to_xml_string(debug_context=debug_context)
+      return self.from_xml_string(xml_string)
 
   def thorax_upright(self):
     """Returns projection from y-axes of thorax to the z-axes of world."""
