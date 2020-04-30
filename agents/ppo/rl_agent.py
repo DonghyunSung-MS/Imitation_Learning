@@ -241,7 +241,7 @@ class PPOAgent:
                 pd_torque = self._env._task.PD_torque(p_out, self._env._physics)
 
                 time_step = self._env.step(pd_torque)
-                print(pd_torque.max(),pd_torque.min())
+                #print(pd_torque.max(),pd_torque.min())
                 s_, r , m = self.history.covert_time_step_data(time_step)
 
                 self.history.store_history(p_out, input_tensor, r, m)
@@ -264,7 +264,7 @@ class PPOAgent:
                        "Ep_total_reward": total_reward_per_ep,
                        "Ep_Avg_reward": total_reward_per_ep / steps,
                        "Ep_len": steps})
-            
+
             sample_num = self.history.get_trajLength()
         avg_steps = sample_num / episode
         sum_reward_iter = self.history.calc_return()

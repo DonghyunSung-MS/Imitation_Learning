@@ -3,8 +3,8 @@ from easydict import EasyDict as edict
 IMIT_CONFIGS = {
     "sub7_walk1":
     edict({
-        "gpu":False,
-        "render":True,
+        "gpu":True,
+        "render":False,
         "log_dir":"./expData/sub7_walk1/1st/logs/",
         "log_interval":1,
         "save_interval":30,
