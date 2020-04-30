@@ -8,7 +8,7 @@ IMIT_CONFIGS = {
         "log_dir":"./expData/sub7_walk1/1st/logs/",
         "log_interval":1,
         "save_interval":30,
-        "filename":"./motionData/humanoid_CMU/subject7_walk1.amc",
+        "filename":"./motionData/humanoid_CMU/sub7_walk1.amc",
         "model_dir":"./expData/sub7_walk1/1st/policies/",
         "max_num_frames":316,
         "hidden_size": [512, 256],
