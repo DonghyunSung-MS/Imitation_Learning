@@ -26,7 +26,6 @@ from dm_control import mjcf
 from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
-from dm_control.suite import common
 from dm_control.suite.utils import randomizers
 from dm_control.utils import containers
 from dm_control.utils import rewards
@@ -36,8 +35,8 @@ from utills.refernceDataBuffer import ReferenceData
 
 import numpy as np
 
-_DEFAULT_TIME_LIMIT = 20
-_CONTROL_TIMESTEP = 0.02
+_DEFAULT_TIME_LIMIT = 30
+_CONTROL_TIMESTEP = 0.03
 
 # Height of head above which stand reward is 1.
 _STAND_HEIGHT = 1.4
@@ -48,16 +47,13 @@ _RUN_SPEED = 10
 
 SUITE = containers.TaggedTasks()
 
-
-def get_model_and_assets():
-  """Returns a tuple containing the model XML string and a dict of assets."""
-  return common.read_model('humanoid_CMU.xml'), common.ASSETS
-
+#MJCF_MODEL
+_MODEL = mjcf.from_path("./assets/humanoid_dummy/CMU_v1.xml")
 
 @SUITE.add()
-def walk(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
+def walk(mjcf_model = _MODEL, time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
   """Returns the Stand task."""
-  physics = Physics.from_xml_string(*get_model_and_assets())
+  physics = Physics.domain_randomizers(Physics, _MODEL)
   task = HumanoidCMUImitation(move_speed=1, random=random)
   environment_kwargs = environment_kwargs or {}
   return control.Environment(
@@ -92,6 +88,9 @@ class Physics(mujoco.Physics):
   def torso_vertical_orientation(self):
     """Returns the z-projection of the thorax orientation matrix."""
     return self.named.data.xmat['thorax', ['zx', 'zy', 'zz']]
+
+  def center_of_mass_angvel(self):
+      return self.named.data.sensordata["sensor_thorax_gyro"].copy()
 
   def joint_angles(self):
     """Returns the state without global orientation or position."""
@@ -154,21 +153,22 @@ class HumanoidCMUImitation(base.Task):
     #print(physics.named.data.qvel.shape)
     #print(physics.named.data.qpos.shape)
     obs = collections.OrderedDict()
-    obs['phase'] = np.array([self.num_frame/self.max_frame])
     obs['joint_angles'] = physics.joint_angles()
-    obs['joint_velocity'] = physics.named.data.qvel[6:].copy()
+    #obs['joint_velocity'] = physics.named.data.qvel[6:].copy()
     #obs['head_height'] = physics.head_height()
     #obs['extremities'] = physics.extremities()
     ori = physics.torso_vertical_orientation()
     obs['torso_orientation_quat'] = mjmath.euler2quat(ori[0], ori[1], ori[2])
 
+
     #obs['com_velocity'] = physics.center_of_mass_velocity()
     #obs['velocity'] = physics.velocity()
     return obs
-  def PD_torque(self, p_out, j_vel):
+  def PD_torque(self, p_out, physics):
       #print(j_vel.shape, p_out.shape, self.reference_data(self.num_frame)["joint_angles"].shape)
-      kp = 0.1
-      kv = 0.1
+      j_vel = physics.named.data.qvel[6:].copy()
+      kp = 0.15
+      kv = 0.08
       return kp*(self.reference_data(self.num_frame)["joint_angles"] - p_out) - kv*j_vel
 
   def get_reward(self, physics):
@@ -198,24 +198,22 @@ class HumanoidCMUImitation(base.Task):
                                sigmoid='linear')
       move = (5*move + 1) / 6
       '''
+
     """ imitation  reward"""
 
 
     def reward_normalize(a, b, weight):
         return math.exp(weight *np.sum(np.square(a, b)))
+
     # cyclic motion
     self.num_frame += 1
     if self.num_frame >=self.max_frame:
         self.num_frame = 0
 
-    #Joint angle and orientation reward
-    ref_pos = np.hstack([self.reference_data(self.num_frame)['joint_angles'],
-                         self.reference_data(self.num_frame)['torso_orientation_quat']])
-
-    ori = physics.torso_vertical_orientation()
-    cur_pos = np.hstack([physics.joint_angles(),
-                         mjmath.euler2quat(ori[0], ori[1], ori[2])])
-    imit_pos_reward = reward_normalize(ref_pos, cur_pos, -2.0)
+    #Joint angle reward
+    ref_jp = self.reference_data(self.num_frame)['joint_angles']
+    cur_jp = physics.joint_angles()
+    imit_pos_reward = reward_normalize(ref_jp, cur_jp, -5.0)
 
     #Joint velocity reward
     ref_jvel = self.reference_data(self.num_frame)['joint_velocity']
@@ -227,15 +225,35 @@ class HumanoidCMUImitation(base.Task):
     cur_ee = physics.extremities()
     imit_ee_reward = reward_normalize(ref_ee, cur_ee, -40.0)
 
-    #Com position reward
-    ref_com = self.reference_data(self.num_frame)['com_position']
-    cur_com = physics.center_of_mass_position()
-    imit_com_reward = reward_normalize(ref_com, cur_com, -10.0)
+    #Com position and orientation reward
+    ref_com_xpos = self.reference_data(self.num_frame)['com_position']
+    cur_com_xpos = physics.center_of_mass_position()
+    imit_com_xpos_reward = reward_normalize(ref_com_xpos, cur_com_xpos, -20.0)
 
-    total_imit_reward = 0.65 * imit_pos_reward + \
-                         0.1 * imit_vel_reward + \
-                         0.15 * imit_ee_reward + \
-                         0.1 * imit_com_reward
+    ref_com_ori = self.reference_data(self.num_frame)['torso_orientation_quat']
+    cur_com_ori = physics.torso_vertical_orientation()
+    cur_com_ori = mjmath.euler2quat(cur_com_ori[0], cur_com_ori[1], cur_com_ori[2])
+    imit_com_ori_reward = reward_normalize(ref_com_ori, cur_com_ori, -10.0)
+
+    imit_com_pos_reward = imit_com_ori_reward*imit_com_xpos_reward
+
+    #Com lvel angvel reward
+    ref_com_lvel = self.reference_data(self.num_frame)['com_linear_velocity']
+    cur_com_lvel = physics.center_of_mass_velocity()
+    imit_com_lvel_reward = reward_normalize(ref_com_lvel, cur_com_lvel, -2.0)
+
+    ref_com_angvel = self.reference_data(self.num_frame)['com_angular_velocity']
+    cur_com_angvel = physics.center_of_mass_angvel()
+    imit_com_angvel_reward = reward_normalize(ref_com_angvel, cur_com_angvel, -0.2)
+
+    imit_com_vel_reward = imit_com_lvel_reward*imit_com_angvel_reward
+
+    #weights are hyperparameters
+    total_imit_reward = 0.5 * imit_pos_reward + \
+                         0.05 * imit_vel_reward + \
+                         0.2 * imit_ee_reward + \
+                         0.15 * imit_com_pos_reward + \
+                         0.1 * imit_com_vel_reward
 
     """ Goal reward"""
     #TODO

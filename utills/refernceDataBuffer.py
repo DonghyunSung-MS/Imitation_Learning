@@ -3,6 +3,7 @@ from dm_control.suite.utils import parse_amc
 from dm_control.mujoco import math as mjmath
 
 import collections
+import numpy as np
 
 class ReferenceData:
     def __init__(self, env, filename, max_num_frames):
@@ -29,11 +30,18 @@ class ReferenceData:
             tmp['torso_orientation_quat'] = mjmath.euler2quat(ori[0], ori[1], ori[2])
             tmp['extremities'] = env.physics.extremities()
             tmp['com_position'] = env.physics.center_of_mass_position()
-
+            tmp["com_linear_velocity"] = env.physics.center_of_mass_velocity()
+            tmp["com_angular_velocity"] = env.physics.center_of_mass_angvel()
             self.data_per_frame.append(tmp)
 
     def __call__(self, num_frame):
         return self.data_per_frame[num_frame]
+
+    def get_goal(self, num_frame):
+        tmp = np.hstack([self.data_per_frame[num_frame]['joint_angles'],
+                         self.data_per_frame[num_frame]['torso_orientation_quat']])
+        return np.reshape(tmp,[1,-1])
+
 
     def get_max_frame(self):
         return self.max_frame
