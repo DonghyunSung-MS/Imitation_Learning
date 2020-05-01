@@ -3,7 +3,7 @@ from utills.rl_utills import *
 class PPOActor(nn.Module):
     def __init__(self, input_dim, output_dim, args):
         super().__init__()
-        self.a_net = mlp(input_dim, args.hidden_size, output_dim, len(args.hidden_size)+1, nn.Tanh)
+        self.a_net = mlp(input_dim, args.hidden_size, output_dim, len(args.hidden_size)+1, nn.ReLU)
         #print(self.a_net)
         self.gpu = args.gpu
 
@@ -31,7 +31,7 @@ class PPOActor(nn.Module):
 class PPOCritic(nn.Module):
     def __init__(self, input_dim, args):
         super().__init__()
-        self.c_net = mlp(input_dim, args.hidden_size, 1, len(args.hidden_size)+1, nn.Tanh)
+        self.c_net = mlp(input_dim, args.hidden_size, 1, len(args.hidden_size)+1, nn.ReLU)
         #print(self.c_net)
 
 
