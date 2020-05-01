@@ -163,10 +163,10 @@ class PPOAgent:
                 new_values_samples = self._critic(states_samples).squeeze(1)
 
                 """Monte-Carlo Estimate(unbias high variance)"""
-                #critic_loss = mse(new_values_samples, rewards2go_samples)
+                critic_loss = mse(new_values_samples, rewards2go_samples)
 
                 """TD, Bellman Error(bias low variance)"""
-                critic_loss = mse(new_values_samples, td_target_samples)
+                #critic_loss = mse(new_values_samples, td_target_samples)
                 #print(new_values_samples.shape, rewards2go_samples.shape)
                 #Surrogate Loss
 
@@ -180,14 +180,13 @@ class PPOAgent:
                 total_actor_loss += actor_loss.item()
                 total_critic_loss += critic_loss.item()
 
-                loss = actor_loss + 0.5 * critic_loss
                 # update actor & critic
                 self.critic_optim.zero_grad()
-                loss.backward(retain_graph=True)
+                critic_loss.backward()
                 self.critic_optim.step()
 
                 self.actor_optim.zero_grad()
-                loss.backward()
+                actor_loss.backward()
                 self.actor_optim.step()
 
         if (iter+1)%self.log_interval==0:
@@ -195,12 +194,15 @@ class PPOAgent:
             self._logger.log_tabular("Critic_loss", total_critic_loss/num)
             self._logger.print_tabular()
             self._logger.dump_tabular()
+            wandb.log({"Actor_loss": total_actor_loss/num,
+                       "Critic_loss": total_critic_loss/num})
+
 
 
     def _rollout(self):
         """rollout utill sample num is larger thatn max samples per iter"""
         sample_num = 0
-        episode = 1
+        episode = 0
         avg_train_return = 0
         avg_steps = 0
         max_frame = self._env._task.max_frame
@@ -266,6 +268,7 @@ class PPOAgent:
                        "Ep_len": steps})
 
             sample_num = self.history.get_trajLength()
+
         avg_steps = sample_num / episode
         sum_reward_iter = self.history.calc_return()
         avg_train_return = sum_reward_iter / episode

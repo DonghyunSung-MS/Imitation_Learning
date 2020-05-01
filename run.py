@@ -13,7 +13,7 @@ def main():
     wandb.init(project="imitation-learning-walk")
 
     configs = IMIT_CONFIGS[args.env] #presetting prameters for each enviroment.
-    wandb.config.update(configs)
+    #wandb.config.update(configs)
     env = humanoid_CMU_imitation.walk()
     env._task.__init__(move_speed=0, random= args.seed)
     env._task.set_referencedata(env, configs.filename, configs.max_num_frames)

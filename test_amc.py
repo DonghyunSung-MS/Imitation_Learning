@@ -27,12 +27,13 @@ from __future__ import division
 from __future__ import print_function
 
 import time
+import wandb
 # Internal dependencies.
 
 from absl import app
 from absl import flags
 
-from dm_control.suite import humanoid_CMU
+from tasks.humanoid_CMU import humanoid_CMU_imitation
 from dm_control.suite.utils import parse_amc
 
 import matplotlib.pyplot as plt
@@ -45,13 +46,14 @@ flags.DEFINE_integer('max_num_frames', 316,
 
 
 def main(unused_argv):
-  env = humanoid_CMU.stand()
+  env = humanoid_CMU_imitation.walk()
 
   # Parse and convert specified clip.
   converted = parse_amc.convert(FLAGS.filename,
                                 env.physics, env.control_timestep())
-
+  print(FLAGS.max_num_frames)
   max_frame = min(FLAGS.max_num_frames, converted.qpos.shape[1] - 1)
+  print(max_frame)
   #print(converted.qpos)
   width = 480
   height = 480
@@ -59,11 +61,26 @@ def main(unused_argv):
 
   for i in range(max_frame):
     p_i = converted.qpos[:, i]
+
     with env.physics.reset_context():
       env.physics.data.qpos[:] = p_i
+
+    #print("root_pos : ",env.physics.center_of_mass_position())
+    #print("root_vel : ",env.physics.center_of_mass_velocity())
+    print("root_ori : ",env.physics.com_orientation())
+    #print("root_avl : ",env.physics.center_of_mass_angvel())
+    """
+    wandb.log({"frame": i,
+               "root_pos_x" : env.physics.center_of_mass_position()[0],
+               "root_pos_y" : env.physics.center_of_mass_position()[1],
+               "root_pos_z" : env.physics.center_of_mass_position()[2],
+               "root_ori_x" : env.physics.com_orientation()[0],
+               "root_ori_y" : env.physics.com_orientation()[1],
+               "root_ori_z" : env.physics.com_orientation()[2]})
+    """
     video[i] = np.hstack([env.physics.render(height, width, camera_id=0),
                           env.physics.render(height, width, camera_id=1)])
-
+  '''
   tic = time.time()
   i=0
   while True:
@@ -78,14 +95,14 @@ def main(unused_argv):
     tic = time.time()
     i=i+1
     # Real-time playback not always possible as clock_dt > .03
-    #plt.pause(max(0.01, 0.03 - clock_dt))  # Need min display time > 0.0.
+    plt.pause(max(0.01, 0.03 - clock_dt))  # Need min display time > 0.0.
 
     plt.draw()
-    print(i)
-    plt.waitforbuttonpress()
-
+    #plt.waitforbuttonpress()
+  '''
 
 
 if __name__ == '__main__':
+  #wandb.init(project="imitation-learning-walk")
   flags.mark_flag_as_required('filename')
   app.run(main)

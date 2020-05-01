@@ -36,7 +36,7 @@ from utills.refernceDataBuffer import ReferenceData
 import numpy as np
 
 _DEFAULT_TIME_LIMIT = 30
-_CONTROL_TIMESTEP = 0.03
+_CONTROL_TIMESTEP = 0.002
 
 # Height of head above which stand reward is 1.
 _STAND_HEIGHT = 1.4
@@ -71,23 +71,25 @@ class Physics(mujoco.Physics):
 
   def thorax_upright(self):
     """Returns projection from y-axes of thorax to the z-axes of world."""
-    return self.named.data.xmat['thorax', 'zy']
+    return self.named.data.xmat['thorax', 'zy'].copy()
 
   def head_height(self):
     """Returns the height of the head."""
-    return self.named.data.xpos['head', 'z']
+    return self.named.data.xpos['head', 'z'].copy()
 
   def center_of_mass_position(self):
     """Returns position of the center-of-mass."""
-    return self.named.data.subtree_com['thorax']
+    return self.named.data.subtree_com['thorax'].copy()
 
   def center_of_mass_velocity(self):
     """Returns the velocity of the center-of-mass."""
     return self.named.data.sensordata['thorax_subtreelinvel'].copy()
 
-  def torso_vertical_orientation(self):
-    """Returns the z-projection of the thorax orientation matrix."""
-    return self.named.data.xmat['thorax', ['zx', 'zy', 'zz']]
+  def com_orientation(self):
+    return self.named.data.xquat['thorax'].copy()
+
+  def com_orientation_mat(self):
+    return self.named.data.xmat['thorax'].copy()
 
   def center_of_mass_angvel(self):
       return self.named.data.sensordata["sensor_thorax_gyro"].copy()
@@ -98,8 +100,8 @@ class Physics(mujoco.Physics):
 
   def extremities(self):
     """Returns end effector positions in egocentric frame."""
-    torso_frame = self.named.data.xmat['thorax'].reshape(3, 3)
-    torso_pos = self.named.data.xpos['thorax']
+    torso_frame = self.named.data.xmat['thorax'].copy().reshape(3, 3)
+    torso_pos = self.named.data.xpos['thorax'].copy()
     positions = []
     for side in ('l', 'r'):
       for limb in ('hand', 'foot'):
@@ -157,8 +159,7 @@ class HumanoidCMUImitation(base.Task):
     #obs['joint_velocity'] = physics.named.data.qvel[6:].copy()
     #obs['head_height'] = physics.head_height()
     #obs['extremities'] = physics.extremities()
-    ori = physics.torso_vertical_orientation()
-    obs['torso_orientation_quat'] = mjmath.euler2quat(ori[0], ori[1], ori[2])
+    obs['torso_orientation_quat'] = physics.com_orientation()
 
 
     #obs['com_velocity'] = physics.center_of_mass_velocity()
@@ -231,7 +232,7 @@ class HumanoidCMUImitation(base.Task):
     imit_com_xpos_reward = reward_normalize(ref_com_xpos, cur_com_xpos, -20.0)
 
     ref_com_ori = self.reference_data(self.num_frame)['torso_orientation_quat']
-    cur_com_ori = physics.torso_vertical_orientation()
+    cur_com_ori = physics.com_orientation()
     cur_com_ori = mjmath.euler2quat(cur_com_ori[0], cur_com_ori[1], cur_com_ori[2])
     imit_com_ori_reward = reward_normalize(ref_com_ori, cur_com_ori, -10.0)
 
