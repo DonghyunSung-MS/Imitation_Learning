@@ -1,5 +1,5 @@
 
-from dm_control.suite.utils import parse_amc
+from utils import parse_amc
 from dm_control.mujoco import math as mjmath
 
 import collections
@@ -36,13 +36,14 @@ class ReferenceData:
     def __init__(self, env, filename, max_num_frames):
         self.converted = parse_amc.convert(filename,
                                   env.physics, env.control_timestep())
-        self.max_frame = min(max_num_frames, self.converted.qpos.shape[1] - 1)
+        self.max_frame = self.converted.qpos.shape[1]-1
 
         self.data_per_frame = []
         '''
         Data contains refrence joint angle, torso orientation quaternion,
         extremities position in torso(egocentric) frame, com position, joint velocity
         '''
+        print(self.converted.qvel[6:].shape)
         dt = env.control_timestep()
         print("dt is ",dt)
         for i in range(self.max_frame):
@@ -51,14 +52,12 @@ class ReferenceData:
             tmp['initialize_episode'] = qpos
             tmp['joint_angles'] = env.physics.joint_angles()
             tmp['joint_velocity'] = self.converted.qvel[6:, i].copy()
-
             with env.physics.reset_context():
                 env.physics.data.qpos[:] = qpos
             tmp['torso_orientation_quat'] = env.physics.com_orientation()
             tmp['torso_orientation_mat'] = env.physics.com_orientation_mat()
             tmp['extremities'] = env.physics.extremities()
             tmp['com_position'] = env.physics.center_of_mass_position()
-
             if i>0:
                 tmp["com_linear_velocity"] = (tmp['com_position'] - self.data_per_frame[i-1]['com_position']) / dt
                 tmp["com_angular_velocity"] = getphi(self.data_per_frame[i-1]['torso_orientation_mat'] ,env.physics.com_orientation_mat()) / dt
@@ -67,12 +66,11 @@ class ReferenceData:
                 tmp["com_linear_velocity"] = np.zeros(3)
                 tmp["com_angular_velocity"] = np.zeros(3)
             self.data_per_frame.append(tmp)
-            #print(tmp["com_linear_velocity"])
-            #print(tmp["com_angular_velocity"])
-            #print()
-            #wandb.log(tmp)
+            num_joint = len(tmp["joint_angles"])
+
         self.data_per_frame[0]['com_linear_velocity'] = self.data_per_frame[1]['com_linear_velocity']
         self.data_per_frame[0]['com_angular_velocity'] = self.data_per_frame[1]['com_angular_velocity']
+        #self.plot()
 
     def __call__(self, num_frame):
         return self.data_per_frame[num_frame]
@@ -85,3 +83,16 @@ class ReferenceData:
 
     def get_max_frame(self):
         return self.max_frame
+
+    def plot(self):
+        """using wandb"""
+        for i in range(self.max_frame):
+            for j in range(56):
+                wandb.log({"frame":i,
+                           'joint'+str(j)+"ang":self.data_per_frame[i]['joint_angles'][j],
+                           'joint'+str(j)+'vel':self.data_per_frame[i]['joint_velocity'][j]})
+
+        for i in range(self.max_frame):
+            wandb.log({"com_x":self.data_per_frame[i]["com_position"][0],
+                       "com_y":self.data_per_frame[i]["com_position"][1],
+                       "com_z":self.data_per_frame[i]["com_position"][2]})

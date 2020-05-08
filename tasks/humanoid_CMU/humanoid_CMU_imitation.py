@@ -31,12 +31,12 @@ from dm_control.utils import containers
 from dm_control.utils import rewards
 from dm_control.mujoco import math as mjmath
 
-from utills.refernceDataBuffer import ReferenceData
+from utils.refernceDataBuffer import ReferenceData
 
 import numpy as np
 
 _DEFAULT_TIME_LIMIT = 30
-_CONTROL_TIMESTEP = 0.002
+_CONTROL_TIMESTEP = 0.01
 
 # Height of head above which stand reward is 1.
 _STAND_HEIGHT = 1.4
@@ -130,6 +130,7 @@ class HumanoidCMUImitation(base.Task):
     self.reference_data = None
     self.num_frame = 0.0
     self.max_frame = None
+    self.smoothing_filter = collections.deque(maxlen=10)
 
   def initialize_episode(self, physics):
     """Sets a random collision-free configuration at the start of each episode.
@@ -166,11 +167,14 @@ class HumanoidCMUImitation(base.Task):
     #obs['velocity'] = physics.velocity()
     return obs
   def PD_torque(self, p_out, physics):
+
       #print(j_vel.shape, p_out.shape, self.reference_data(self.num_frame)["joint_angles"].shape)
       j_vel = physics.named.data.qvel[6:].copy()
       kp = 0.15
       kv = 0.08
-      return kp*(self.reference_data(self.num_frame)["joint_angles"] - p_out) - kv*j_vel
+      out = kp*(self.reference_data(self.num_frame)["joint_angles"] - p_out) - kv*j_vel
+      self.smoothing_filter.append(out)
+      return np.mean(np.array(self.smoothing_filter))
 
   def get_reward(self, physics):
     """Returns a reward to the agent."""
@@ -209,7 +213,7 @@ class HumanoidCMUImitation(base.Task):
     # cyclic motion
     self.num_frame += 1
     if self.num_frame >=self.max_frame:
-        self.num_frame = 0
+        self.num_frame = 1
 
     #Joint angle reward
     ref_jp = self.reference_data(self.num_frame)['joint_angles']

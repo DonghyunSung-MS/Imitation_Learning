@@ -1,4 +1,4 @@
-import utills.logger as logger
+import utils.logger as logger
 
 test = logger.Logger()
 test.configure_output_file()

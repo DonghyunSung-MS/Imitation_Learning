@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 #from collections import deque
 
 from dm_control import viewer
-import utills.logger as logger
-import utills.trajectoryBuffer as trajBuff
-import utills.rl_utills as rl_utills
+import utils.logger as logger
+import utils.trajectoryBuffer as trajBuff
+import utils.rl_utils as rl_utils
 from agents.ppo.core import PPOActor, PPOCritic
 
 
@@ -69,25 +69,30 @@ class PPOAgent:
         self.history = None
         self.global_episode = 0
 
-    def test_interact(self, model_path):
-        self._actor.load_state_dict(torch.load(model_path))
-
-        def source_policy(time_step):
-            s = None
-            for k, v in time_step.observation.items():
-                if s is None:
-                    s = v
-                else:
-                    s = np.hstack([s, v])
-            j_vel = time_step.observation["joint_velocity"]
-            s_3d = np.reshape(s, [1, self.state_dim])
-            mu, std = self._actor(torch.Tensor(s_3d).to(self.dev))
-            p_out = self._actor.get_action(mu, std)
-            pd_torque = self._env._task.PD_torque(p_out,j_vel)
-
-            return pd_torque
-
-        viewer.launch(self._env, policy=source_policy)
+    def test_interact(self, model_path, random=False):
+        if random:
+            def random_policy(time_step):
+                del time_step  # Unused.
+                return np.random.uniform(low=self._env.action_spec().minimum,
+                                         high=self._env.action_spec().maximum,
+                                         size=self._env.action_spec().shape)
+            viewer.launch(self._env, policy=random_policy)
+        else:
+            self._actor.load_state_dict(torch.load(model_path))
+            def source_policy(time_step):
+                s = None
+                for k, v in time_step.observation.items():
+                    if s is None:
+                        s = v
+                    else:
+                        s = np.hstack([s, v])
+                j_vel = time_step.observation["joint_velocity"]
+                s_3d = np.reshape(s, [1, self.state_dim])
+                mu, std = self._actor(torch.Tensor(s_3d).to(self.dev))
+                p_out = self._actor.get_action(mu, std)
+                pd_torque = self._env._task.PD_torque(p_out,j_vel)
+                return pd_torque
+            viewer.launch(self._env, policy=source_policy)
     def train(self):
         log_file = os.path.join(self.log_dir,"log.txt")
         self._logger = logger.Logger()
@@ -134,7 +139,7 @@ class PPOAgent:
 
         old_values = self._critic(torch.Tensor(states).to(self.dev))
 
-        rewards2go, advantages, td_target = rl_utills.get_rl_ele(masks, rewards, old_values, self)
+        rewards2go, advantages, td_target = rl_utils.get_rl_ele(masks, rewards, old_values, self)
 
         mu, std = self._actor(torch.Tensor(states).to(self.dev))
         old_policy_log = self._actor.get_log_prob(actions.to(self.dev), mu, std).squeeze(1)
@@ -170,7 +175,7 @@ class PPOAgent:
                 #print(new_values_samples.shape, rewards2go_samples.shape)
                 #Surrogate Loss
 
-                actor_loss, ratio = rl_utills.surrogate_loss(self._actor, old_policy_log.detach(),
+                actor_loss, ratio = rl_utils.surrogate_loss(self._actor, old_policy_log.detach(),
                                    advantages_samples, states_samples,  actions_samples,
                                    mini_batch_index)
                 #print(actor_loss.shape)

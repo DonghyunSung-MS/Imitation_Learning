@@ -7,7 +7,7 @@ from tasks.humanoid_CMU import humanoid_CMU_imitation
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env",type=str,default="sub7_walk1")
+    parser.add_argument("--env",type=str,default="sub8_walk1")
     parser.add_argument("--seed",type=int,default=1)
     args = parser.parse_args()
     wandb.init(project="imitation-learning-walk")

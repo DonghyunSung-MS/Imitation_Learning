@@ -34,75 +34,96 @@ from absl import app
 from absl import flags
 
 from tasks.humanoid_CMU import humanoid_CMU_imitation
-from dm_control.suite.utils import parse_amc
+from utils import parse_amc
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('filename', None, 'amc file to be converted.')
-flags.DEFINE_integer('max_num_frames', 316,
+flags.DEFINE_integer('max_num_frames', 277,
                      'Maximum number of frames for plotting/playback')
 
 
 def main(unused_argv):
-  env = humanoid_CMU_imitation.walk()
+    env = humanoid_CMU_imitation.walk()
 
-  # Parse and convert specified clip.
-  converted = parse_amc.convert(FLAGS.filename,
+    # Parse and convert specified clip.
+    converted = parse_amc.convert(FLAGS.filename,
                                 env.physics, env.control_timestep())
-  print(FLAGS.max_num_frames)
-  max_frame = min(FLAGS.max_num_frames, converted.qpos.shape[1] - 1)
-  print(max_frame)
-  #print(converted.qpos)
-  width = 480
-  height = 480
-  video = np.zeros((max_frame, height, 2 * width, 3), dtype=np.uint8)
 
-  for i in range(max_frame):
-    p_i = converted.qpos[:, i]
+    table = parse_amc.parse(FLAGS.filename)
+    table = np.array(table).transpose()
+    print(table[1][:].shape)
+    print(converted.qpos[0][:].shape)
+    print(FLAGS.max_num_frames)
+    max_frame = FLAGS.max_num_frames
+    print(max_frame)
+    frame_list = np.array([x+1 for x in range(max_frame)])
+    resample_frame = np.array([x+1 for x in range(converted.qpos.shape[1])])
+    '''
+    fig, axes = plt.subplots(nrows=2, ncols=6)
+    for i in range(6):
+        if i<3:
+            axes[i//6][i%6].plot(frame_list/120.0, table[i][:]*0.056444)
+        else:
+            axes[i//6][i%6].plot(frame_list/120.0, table[i][:])
+        axes[i//6][i%6].set_title(str(i)+"root")
+    for i in range(6):
+        i = i+6
+        axes[i//6][i%6].plot(resample_frame*0.002, converted.qpos[i-6][:])
+        axes[i//6][i%6].set_title("resample"+str(i-6)+"root")
+    plt.show()
+    '''
+    #print(converted.qpos)
+    width = 480
+    height = 480
+    video = np.zeros((max_frame, height, 2 * width, 3), dtype=np.uint8)
 
-    with env.physics.reset_context():
-      env.physics.data.qpos[:] = p_i
+    for i in range(converted.qpos.shape[1] - 1):
+        p_i = converted.qpos[:, i]
 
-    #print("root_pos : ",env.physics.center_of_mass_position())
-    #print("root_vel : ",env.physics.center_of_mass_velocity())
-    print("root_ori : ",env.physics.com_orientation())
-    #print("root_avl : ",env.physics.center_of_mass_angvel())
-    """
-    wandb.log({"frame": i,
-               "root_pos_x" : env.physics.center_of_mass_position()[0],
-               "root_pos_y" : env.physics.center_of_mass_position()[1],
-               "root_pos_z" : env.physics.center_of_mass_position()[2],
-               "root_ori_x" : env.physics.com_orientation()[0],
-               "root_ori_y" : env.physics.com_orientation()[1],
-               "root_ori_z" : env.physics.com_orientation()[2]})
-    """
-    video[i] = np.hstack([env.physics.render(height, width, camera_id=0),
-                          env.physics.render(height, width, camera_id=1)])
-  '''
-  tic = time.time()
-  i=0
-  while True:
-    if i == 0:
-      img = plt.imshow(video[i])
-    elif i==max_frame-1:
-      i=0
-    else:
-      img.set_data(video[i])
-    toc = time.time()
-    clock_dt = toc - tic
+        with env.physics.reset_context():
+            env.physics.data.qpos[:] = p_i
+
+        #print("root_pos : ",env.physics.center_of_mass_position())
+        #print("root_vel : ",env.physics.center_of_mass_velocity())
+        #print("root_ori : ",env.physics.com_orientation())
+        #print("root_avl : ",env.physics.center_of_mass_angvel())
+        """
+        wandb.log({"frame": i,
+                   "root_pos_x" : env.physics.center_of_mass_position()[0],
+                   "root_pos_y" : env.physics.center_of_mass_position()[1],
+                   "root_pos_z" : env.physics.center_of_mass_position()[2],
+                   "root_ori_x" : env.physics.com_orientation()[0],
+                   "root_ori_y" : env.physics.com_orientation()[1],
+                   "root_ori_z" : env.physics.com_orientation()[2]})
+        """
+        video[i] = np.hstack([env.physics.render(height, width, camera_id=0),
+                              env.physics.render(height, width, camera_id=1)])
+
     tic = time.time()
-    i=i+1
-    # Real-time playback not always possible as clock_dt > .03
-    plt.pause(max(0.01, 0.03 - clock_dt))  # Need min display time > 0.0.
+    i=0
+    while True:
+        if i == 0:
+          img = plt.imshow(video[i])
+        elif i==max_frame-1:
+          i=0
+        else:
+          img.set_data(video[i])
+        toc = time.time()
+        clock_dt = toc - tic
+        tic = time.time()
+        i=i+1
+        # Real-time playback not always possible as clock_dt > .03
+        plt.pause(0.002)  # Need min display time > 0.0.
 
-    plt.draw()
-    #plt.waitforbuttonpress()
-  '''
+        plt.draw()
+        #plt.waitforbuttonpress()
+
 
 
 if __name__ == '__main__':
-  #wandb.init(project="imitation-learning-walk")
-  flags.mark_flag_as_required('filename')
-  app.run(main)
+    #wandb.init(project="imitation-learning-walk")
+    flags.mark_flag_as_required('filename')
+    app.run(main)

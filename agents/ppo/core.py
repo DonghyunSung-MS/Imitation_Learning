@@ -1,4 +1,4 @@
-from utills.rl_utills import *
+from utils.rl_utils import *
 
 class PPOActor(nn.Module):
     def __init__(self, input_dim, output_dim, args):
