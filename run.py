@@ -2,7 +2,7 @@ import argparse
 import wandb
 import agents.ppo.rl_agent as rl_agent
 from imit_configs import IMIT_CONFIGS
-from tasks.humanoid_CMU import humanoid_CMU_imitation
+from tasks.humanoid_Tocabi import Tocabi_v1
 
 
 def main():
@@ -13,8 +13,8 @@ def main():
     wandb.init(project="imitation-learning-walk")
 
     configs = IMIT_CONFIGS[args.env] #presetting prameters for each enviroment.
-    #wandb.config.update(configs)
-    env = humanoid_CMU_imitation.walk()
+    wandb.config.update(configs)
+    env = Tocabi_v1.walk()
     env._task.__init__(move_speed=0, random= args.seed)
     env._task.set_referencedata(env, configs.filename, configs.max_num_frames)
 

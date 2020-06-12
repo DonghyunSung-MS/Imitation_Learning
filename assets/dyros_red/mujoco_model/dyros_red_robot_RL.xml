@@ -1,10 +1,10 @@
 <mujoco model="dyros_red_description">
-    <compiler angle="radian" meshdir="../meshes/"/>
+    <compiler angle="radian" meshdir="./assets/dyros_red/mujoco_model/meshes"/>
     <size njmax="500" nconmax="100" />
 
     <default>
 
-        <joint damping="3" frictionloss="0.1"/>
+      <joint damping="4.0" frictionloss="1.0"/>
 
         <motor ctrllimited="true" ctrlrange="-300 300"/>
 
@@ -387,20 +387,24 @@
         <motor name="R_Shoulder1_Motor" joint="R_Shoulder1_Joint"/>
         <motor name="R_Shoulder2_Motor" joint="R_Shoulder2_Joint"/>
         <motor name="R_Shoulder3_Motor" joint="R_Shoulder3_Joint"/>
-        <motor name="R_Armlink_Motor" joint="R_Armlink_Joint"/>
         <motor name="R_Elbow_Motor" joint="R_Elbow_Joint"/>
-        <motor name="R_Forearm_Motor" joint="R_Forearm_Joint"/>
-        <motor name="R_Wrist1_Motor" joint="R_Wrist1_Joint"/>
-        <motor name="R_Wrist2_Motor" joint="R_Wrist2_Joint"/>
+
 
         <motor name="L_Shoulder1_Motor" joint="L_Shoulder1_Joint"/>
         <motor name="L_Shoulder2_Motor" joint="L_Shoulder2_Joint"/>
         <motor name="L_Shoulder3_Motor" joint="L_Shoulder3_Joint"/>
-        <motor name="L_Armlink_Motor" joint="L_Armlink_Joint"/>
         <motor name="L_Elbow_Motor" joint="L_Elbow_Joint"/>
+
+
+        <!--
+        <motor name="R_Forearm_Motor" joint="R_Forearm_Joint"/>
         <motor name="L_Forearm_Motor" joint="L_Forearm_Joint"/>
+        <motor name="R_Armlink_Motor" joint="R_Armlink_Joint"/>
+        <motor name="R_Wrist1_Motor" joint="R_Wrist1_Joint"/>
+        <motor name="R_Wrist2_Motor" joint="R_Wrist2_Joint"/>
+        <motor name="L_Armlink_Motor" joint="L_Armlink_Joint"/>
         <motor name="L_Wrist1_Motor" joint="L_Wrist1_Joint"/>
-        <motor name="L_Wrist2_Motor" joint="L_Wrist2_Joint"/>
+        <motor name="L_Wrist2_Motor" joint="L_Wrist2_Joint"/>-->
 
 
     </actuator>
@@ -426,56 +430,5 @@
 
     </sensor>
 
-    <keyframe>
-        <!--Initial Position Setting -->
-        <key name="front" time="0" qpos ="0 0 0.92683 1 0 0 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								-0.3 -0.3 -1.5 1.27 1 0 1 0
-								0.3 0.3 1.5 -1.27 -1 0 -1 0"/>
 
-        <key name="pos2" time="0" qpos ="0 0 0.92611 0 0 0 1
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								-0.3 -0.3 -1.5 1.27 1 0 1 0
-								0.3 0.3 1.5 -1.27 -1 0 -1 0"/>
-
-        <key time="0" qpos ="0 0 0.92611 0.9659 0 0 -0.2588
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								-0.3 -0.3 -1.5 1.27 1 0 1 0
-								0.3 0.3 1.5 -1.27 -1 0 -1 0"/>
-
-        <key time="0" qpos ="0 1 0.92611 1 0 0 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								-0.3 0 -1.5 -1.87 -0.7 0 -1 0
-								0.3 0 1.5 1.87 0.7 0 1 0"/>
-
-        <key time="0" qpos ="-3 -3 0.92683 1 0 0 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								0 -0.7 -1.57 -1.57 -1.57 0 0.87 0
-								0 0.7 1.57 1.57 1.57 0 -0.87 0"/>
-
-        <key time="0" qpos ="-3 -3 0.92683 1 0 0 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 -0.24 0.6 -0.36 0
-								0 0 0
-								0 -0.8 -1.57 1.57 2.0 0 -1.2 0
-								0 0.8 1.57 -1.57 -2.0 0 1.2 0"/>
-
-        <key time="0" qpos ="-3 3 0.92611 1 0 0 0
-								0 -0.8 -0.4 0.8 -0.4 -0.8
-								0 0.8 -0.4 0.8 -0.4 0.8
-								0 0 0
-								0 1.5708 0.87 0.0 2.44 0.0 -1.57 0
-								0 -1.5708 -0.87 0.0 -2.44 0.0 1.57 0"/>
-
-    </keyframe>
 </mujoco>
