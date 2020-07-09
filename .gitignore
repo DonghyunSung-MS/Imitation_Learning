@@ -133,3 +133,11 @@ wandb/
 
 #expData
 expData/
+#randomized xml
+randXml/
+#draft or test code
+_draft/
+#motion data
+motionData/
+animations/
+tasks/

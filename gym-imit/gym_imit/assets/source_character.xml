@@ -1,0 +1,418 @@
+<mujoco model="humanoid_CMU">
+
+  <include file="common/skybox.xml"/>
+  <include file="common/visual.xml"/>
+  <include file="common/materials.xml"/>
+
+  <default>
+    <joint limited="true" solimplimit="0 0.99 0.01" stiffness="0.1" armature=".01" damping="1" frictionloss="1.0"/>
+    <geom friction="0.7" solref="0.015 1" solimp="0.95 0.99 0.003"/>
+    <motor ctrllimited="true" ctrlrange="-1 1"/>
+    <default class="humanoid">
+      <joint range="-180 180"/>
+      <geom type="capsule" material="self"/>
+      <default class="stiff_low">
+        <joint stiffness=".5" damping="4"/>
+      </default>
+      <default class="stiff_medium">
+        <joint stiffness="10" damping="5"/>
+      </default>
+      <default class="stiff_high">
+        <joint stiffness="30" damping="10" />
+      </default>
+      <default class="touch">
+        <site group="3" rgba="0 0 1 .5"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <geom name="floor" type="plane" conaffinity="1" size="100 100 .2" material="grid"/>
+    <light name="tracking_light" pos="0 0 7" dir="0 0 -1" mode="trackcom"/>
+    <camera name="back" pos="0 3 2.4" xyaxes="-1 0 0 0 -1 2" mode="trackcom"/>
+    <camera name="side" pos="-3 0 2.4" xyaxes="0 -1 0 1 0 2" mode="trackcom"/>
+
+
+    <body name="Hips" childclass="humanoid" pos="0 0 1" euler="0 0 0">
+      <site name="Hips" size=".01" rgba="0.5 0.5 0.5 0"/>
+      <freejoint name="Hips"/>
+      <geom name="Hips_geom" size="0.01 0.04" pos="0 0 0" euler="90 0 0"/>
+      <body name="LHipJoint"  pos="0 0 0">
+        <joint name="LHipJoint_rx" axis="1 0 0" class="stiff_medium"/>
+        <joint name="LHipJoint_ry" axis="0 1 0" class="stiff_medium"/>
+        <joint name="LHipJoint_rz" axis="0 0 1" class="stiff_medium"/>
+        <geom name="LHipJoint" size="0.01 0.01" pos="0 0 0"/>
+        <body name="LeftUpLeg" pos="0.0474  0.0769 -0.1013" quat="1 0 0 0.0">
+          <joint name="LeftUpLeg_rx" axis="1 0 0" class="stiff_medium"/>
+          <joint name="LeftUpLeg_ry" axis="0 1 0" class="stiff_medium"/>
+          <joint name="LeftUpLeg_rz" axis="0 0 1" class="stiff_medium"/>
+
+
+          <geom name="LeftUpLeg" size="0.05 0.202" pos="0. 0.0691 -0.1898" quat="0.9848 0.1737 -0. 0."/>
+
+          <body name="LeftLeg" pos="0. 0.1382 -0.3796">
+            <joint name="LeftLeg_rx" axis="1 0 0" class="stiff_low"/>
+            <joint name="LeftLeg_ry" axis="0 1 0" class="stiff_low"/>
+            <joint name="LeftLeg_rz" axis="0 0 1" class="stiff_low"/>
+
+            <geom name="LeftLeg" size="0.03   0.2114" pos="0.      0.0723 -0.1986" quat=" 0.9848  0.1736 -0.      0. "/>
+
+            <body name="LeftFoot" pos="0. 0.1446 -0.3973" >
+              <joint name="LeftFoot_rx" axis="1 0 0" class="stiff_medium"/>
+              <joint name="LeftFoot_ry" axis="0 1 0" class="stiff_medium"/>
+              <joint name="LeftFoot_rz" axis="0 0 1" class="stiff_medium"/>
+
+              <geom name="LeftFoot_0" size="0.02 0.0668" pos="0.0655  0.0044 -0.0122" quat="0.7546 -0.08   -0.6343  0.1477"/>
+
+              <body name="LeftToeBase" pos="0.1311 0.0089 -0.0244">
+                <joint name="LeftToeBase_rx" axis="1 0 0" />
+                <joint name="LeftToeBase_ry" axis="0 1 0" />
+                <joint name="LeftToeBase_rz" axis="0 0 1" />
+
+                <geom name="LeftToeBase_0" size="0.02 0.03" pos="0.002 0 0" euler="0 90 0"/>
+
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="RHipJoint"  pos="0 0 0">
+        <joint name="RHipJoint_rx" axis="1 0 0" class="stiff_medium"/>
+        <joint name="RHipJoint_ry" axis="0 1 0" class="stiff_medium"/>
+        <joint name="RHipJoint_rz" axis="0 0 1" class="stiff_medium"/>
+        <geom name="RHipJoint" size="0.01 0.01" pos="0 0 0"/>
+        <body name="RightUpLeg" pos="0.0474 -0.0737 -0.1013" quat="1 0 0 -0.0">
+          <joint name="RightUpLeg_rx" axis="1 0 0" class="stiff_medium"/>
+          <joint name="RightUpLeg_ry" axis="0 1 0" class="stiff_medium"/>
+          <joint name="RightUpLeg_rz" axis="0 0 1" class="stiff_medium"/>
+
+          <geom name="RightUpLeg" size="0.05   0.2098" pos="0.     -0.0717 -0.1971" quat=" 0.9848 -0.1736 -0.      0.    "/>
+
+          <body name="RightLeg" pos="0. -0.1435 -0.3943">
+            <joint name="RightLeg_rx" axis="1 0 0" class="stiff_low"/>
+            <joint name="RightLeg_ry" axis="0 1 0" class="stiff_low"/>
+            <joint name="RightLeg_rz" axis="0 0 1" class="stiff_low"/>
+
+            <geom name="RightLeg" size="0.03   0.2119" pos="0.     -0.0725 -0.1991" quat=" 0.9848 -0.1737 -0.      0.   "/>
+
+
+            <body name="RightFoot" pos="0. -0.145 -0.3983" >
+              <joint name="RightFoot_rx" axis="1 0 0" class="stiff_medium"/>
+              <joint name="RightFoot_ry" axis="0 1 0" class="stiff_medium"/>
+              <joint name="RightFoot_rz" axis="0 0 1" class="stiff_medium"/>
+
+              <geom name="RightFoot_0" size="0.02   0.0681" pos="0.0667 -0.0046 -0.0127" quat=" 0.765  -0.1196 -0.6261  0.0915"/>
+
+
+              <body name="RightToeBase" pos="0.1334 -0.0093 -0.0255">
+                <joint name="RightToeBase_rx" axis="1 0 0" />
+                <joint name="RightToeBase_ry" axis="0 1 0" />
+                <joint name="RightToeBase_rz" axis="0 0 1" />
+                <geom name="RightToeBase_0" size="0.02 0.03" pos="0.002 0 0" euler="0 90 0"/>
+
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="LowerBack">
+        <joint name="LowerBack_rx" axis="1 0 0"  class="stiff_high"/>
+        <joint name="LowerBack_ry" axis="0 1 0"  class="stiff_high"/>
+        <joint name="LowerBack_rz" axis="0 0 1"  class="stiff_high"/>
+
+        <geom name="LowerBack" size="0.02   0.0577" pos="-0.0054  0.0008  0.0575" quat="0.0273 0.8938 0.4458 0.0392"/>
+
+        <body name="Spine" pos="-0.0109 0.0016 0.1149">
+          <joint name="Spine_rx" axis="1 0 0"  class="stiff_high"/>
+          <joint name="Spine_ry" axis="0 1 0"  class="stiff_high"/>
+          <joint name="Spine_rz" axis="0 0 1"  class="stiff_high"/>
+
+          <geom name="Spine" size="0.06   0.0578" pos="-0.0012  0.0016  0.0578" quat="0.017  0.8943 0.4472 0.0031"/>
+
+          <body name="Spine1" pos="-0.0024 0.0032 0.1156">
+            <joint name="Spine1_rx" axis="1 0 0"  class="stiff_high"/>
+            <joint name="Spine1_ry" axis="0 1 0"  class="stiff_high"/>
+            <joint name="Spine1_rz" axis="0 0 1"  class="stiff_high"/>
+
+            <geom name="Spine1" size="0.001 0.001" pos="0 0 0" quat="1 0 0 0"/>
+
+            <body name="Neck" pos="0 0 0">
+              <joint name="Neck_rx" axis="1 0 0" range="-30 30" class="stiff_medium"/>
+              <joint name="Neck_ry" axis="0 1 0" range="-30 30" class="stiff_medium"/>
+              <joint name="Neck_rz" axis="0 0 1" range="-20 45" class="stiff_medium"/>
+
+              <geom name="Neck" size="0.03   0.0496" pos="0.0049 -0.0015  0.0493" quat="-0.0359  0.8937  0.4457 -0.0369"/>
+
+              <body name="Neck1" pos="0.0097 -0.0031 0.0986">
+                <joint name="Neck1_rx" axis="1 0 0" range="-30 30" class="stiff_medium"/>
+                <joint name="Neck1_ry" axis="0 1 0" range="-30 30" class="stiff_medium"/>
+                <joint name="Neck1_rz" axis="0 0 1" range="-20 45" class="stiff_medium"/>
+
+                <geom name="Neck1" size="0.02   0.0499" pos="-0.0035  0.0029  0.0497" quat="0.0422 0.8936 0.4466 0.0182"/>
+
+                <body name="Head" pos="-0.007 0.0059 0.0994">
+                  <camera name="egocentric" pos="0 0 0" euler="90 90 0" fovy="80"/>
+                  <joint name="Head_rx" axis="1 0 0" range="-30 30" class="stiff_medium"/>
+                  <joint name="Head_ry" axis="0 1 0" range="-30 30" class="stiff_medium"/>
+                  <joint name="Head_rz" axis="0 0 1" range="-20 45" class="stiff_medium"/>
+                  <geom name="head" size="0.085 0.035" pos="0.03 0 0.11" quat="1 0 0 0"/>
+
+                  <geom name="leye" type="sphere" size="0.02" pos="0.1 .03 0.11"/>
+                  <geom name="reye" type="sphere" size="0.02" pos="0.1 -.03 0.11"/>
+                </body>
+              </body>
+            </body>
+            <body name="LeftShoulder" pos="0 0 0">
+              <joint name="LeftShoulder_rx" axis="1 0 0" class="stiff_high"/>
+              <joint name="LeftShoulder_ry" axis="0 1 0" class="stiff_high"/>
+              <joint name="LeftShoulder_rz" axis="0 0 1" class="stiff_high"/>
+
+              <geom name="LeftShoulder" size="0.04   0.1012" pos="-0.0088  0.0949  0.0339" quat="0.3603  0.4495  0.6823 -0.4501"/>
+
+              <body name="LeftArm" pos="-0.0176 0.1898 0.0678">
+                <joint name="LeftArm_rx" axis="1 0 0" class="stiff_low"/>
+                <joint name="LeftArm_ry" axis="0 1 0" class="stiff_low"/>
+                <joint name="LeftArm_rz" axis="0 0 1" class="stiff_low"/>
+
+                <geom name="LeftArm" size="0.03   0.1406" pos="0.     0.1406 0.    " quat="0.7071 0.7071 0.     0.    "/>
+
+                <body name="LeftForeArm" pos="0. 0.2812 0.">
+                  <joint name="LeftForeArm_rx" axis="1 0 0" class="stiff_low"/>
+                  <joint name="LeftForeArm_ry" axis="0 1 0" class="stiff_low"/>
+                  <joint name="LeftForeArm_rz" axis="0 0 1" class="stiff_low"/>
+
+                  <geom name="LeftForeArm" size="0.02   0.0983" pos="0.     0.0983 0.    " quat="0.7071 0.7071 0.     0.    "/>
+
+                  <body name="LeftHand" pos="0. 0.1966 0. " quat="0 0 0 0">
+                    <joint name="LeftHand_rx" axis="1 0 0" />
+                    <joint name="LeftHand_ry" axis="0 1 0" />
+                    <joint name="LeftHand_rz" axis="0 0 1" />
+
+                    <geom name="LeftHand" size="0.01 0.01" pos="0 0 0" quat="1 0 0 0"/>
+
+                    <body name="LeftFingerBase" pos="0 0 0">
+                      <joint name="LeftFingerBase_rx" axis="1 0 0" range="-45 45"/>
+                      <joint name="LeftFingerBase_ry" axis="0 1 0" range="-45 45"/>
+                      <joint name="LeftFingerBase_rz" axis="0 0 1" range="-90 90"/>
+
+                      <geom name="LeftFingerBase" size="0.03   0.03" pos="0.     0.0202 0.    " quat="0.7071 0.7071 0.     0.    "/>
+
+                      <body name="LeftHandIndex1" pos="0. 0.0404 0.">
+                        <joint name="LeftHandIndex1_rx" axis="1 0 0" range="0 90"/>
+                        <joint name="LeftHandIndex1_ry" axis="0 1 0" range="0 90"/>
+                        <joint name="LeftHandIndex1_rz" axis="0 0 1" range="0 90"/>
+
+                        <geom name="LeftHandIndex1_0" size="0.001 0.001" pos="0 0.05 -.03 " euler="0 0 0" />
+
+                      </body>
+                    <body name="LThumb" pos="0 0 0" euler="0 0 0">
+                      <joint name="LThumb_rx" axis="1 0 0" range="-45 45"/>
+                      <joint name="LThumb_ry" axis="0 1 0" range="-45 45"/>
+                      <joint name="LThumb_rz" axis="0 0 1" range="0 90"/>
+                      <geom name="LThumb" size="0.001 0.001" pos="0.06 0 0" euler="0 0 0"/>
+                    </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+            <body name="RightShoulder" pos="0 0 0">
+              <joint name="RightShoulder_rx" axis="1 0 0" class="stiff_high"/>
+              <joint name="RightShoulder_ry" axis="0 1 0" class="stiff_high"/>
+              <joint name="RightShoulder_rz" axis="0 0 1" class="stiff_high"/>
+
+              <geom name="RightShoulder" size="0.04   0.0973" pos="-0.0114 -0.0885  0.0388" quat="-0.293   0.5336  0.644   0.4634"/>
+
+              <body name="RightArm" pos="-0.0228 -0.177 0.0776">
+                <joint name="RightArm_rx" axis="1 0 0" class="stiff_low"/>
+                <joint name="RightArm_ry" axis="0 1 0" class="stiff_low"/>
+                <joint name="RightArm_rz" axis="0 0 1" class="stiff_low"/>
+
+                <geom name="RightArm" size="0.03   0.1479" pos="0.     -0.1479  0." quat="-0.7071  0.7071  0.      0.    "/>
+
+                <body name="RightForeArm" pos="0. -0.2959 0.">
+                  <joint name="RightForeArm_rx" axis="1 0 0" class="stiff_low"/>
+                  <joint name="RightForeArm_ry" axis="0 1 0" class="stiff_low"/>
+                  <joint name="RightForeArm_rz" axis="0 0 1" class="stiff_low"/>
+
+                  <geom name="RightForeArm" size="0.02   0.0972" pos="0.     -0.0972  0." quat="-0.7071  0.7071  0.      0.    "/>
+
+                  <body name="RightHand" pos="0. -0.1944 0." quat="1 0 0 0">
+                    <joint name="RightHand_rx" axis="1 0 0" />
+                    <joint name="RightHand_ry" axis="0 1 0" />
+                    <joint name="RightHand_rz" axis="0 0 1" />
+
+                    <geom name="RightHand" size="0.01 0.01" pos="0 0 0" quat="1 0 0 0"/>
+
+                    <body name="RightFingerBase" pos="0 0 0">
+                      <joint name="RightFingerBase_rx" axis="1 0 0" range="-45 45"/>
+                      <joint name="RightFingerBase_ry" axis="0 1 0" range="-45 45"/>
+                      <joint name="RightFingerBase_rz" axis="0 0 1" range="-90 90"/>
+
+                      <geom name="RightFingerBase" size="0.03   0.03" pos="0.     -0.0175  0.    " quat="-0.7071  0.7071  0.      0.    "/>
+
+                      <body name="RightHandIndex1" pos="0. -0.0351 0.">
+                        <joint name="RightHandIndex1_rx" axis="1 0 0" range="0 90"/>
+                        <joint name="RightHandIndex1_ry" axis="0 1 0" range="0 90"/>
+                        <joint name="RightHandIndex1_rz" axis="0 0 1" range="0 90"/>
+
+                        <geom name="RightHandIndex1_0" size="0.001 0.001" pos="0 -0.05 -.03 " euler="0 0 0" />
+
+                      </body>
+                    <body name="RThumb" pos="0 0 0" euler="0 0 0">
+                      <joint name="RThumb_rx" axis="1 0 0" range="-45 45"/>
+                      <joint name="RThumb_ry" axis="0 1 0" range="-45 45"/>
+                      <joint name="RThumb_rz" axis="0 0 1" range="0 90"/>
+                      <geom name="RThumb" size="0.001 0.001" pos="0.06 0 0" euler="0 0 0"/>
+                    </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!--['Hips', 'LHipJoint', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase',
+    'RHipJoint', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase',
+    'LowerBack', 'Spine', 'Spine1', 'Neck', 'Neck1', 'Head',
+    'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'LeftFingerBase', 'LeftHandIndex1', 'LThumb',
+    'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand', 'RightFingerBase', 'RightHandIndex1', 'RThumb'-->
+
+    <motor name="LHipJoint_rx" joint="LHipJoint_rx" gear="20"/>
+    <motor name="LHipJoint_ry" joint="LHipJoint_ry" gear="20"/>
+    <motor name="LHipJoint_rz" joint="LHipJoint_rz" gear="20"/>
+
+    <motor name="LeftUpLeg_rx" joint="LeftUpLeg_rx" gear="20"/>
+    <motor name="LeftUpLeg_ry" joint="LeftUpLeg_ry" gear="20"/>
+    <motor name="LeftUpLeg_rz" joint="LeftUpLeg_rz" gear="20"/>
+
+    <motor name="LeftLeg_rx" joint="LeftLeg_rz" gear="20"/>
+    <motor name="LeftLeg_ry" joint="LeftLeg_ry" gear="20"/>
+    <motor name="LeftLeg_rz" joint="LeftLeg_rx" gear="20"/>
+
+
+    <motor name="LeftFoot_rx" joint="LeftFoot_rx" gear="20"/>
+    <motor name="LeftFoot_ry" joint="LeftFoot_ry" gear="20"/>
+    <motor name="LeftFoot_rz" joint="LeftFoot_rz" gear="20"/>
+
+    <motor name="LeftToeBase_rx" joint="LeftToeBase_rx" gear="20"/>
+    <motor name="LeftToeBase_ry" joint="LeftToeBase_ry" gear="20"/>
+    <motor name="LeftToeBase_rz" joint="LeftToeBase_rz" gear="20"/>
+
+    <motor name="RHipJoint_rx" joint="RHipJoint_rx" gear="20"/>
+    <motor name="RHipJoint_ry" joint="RHipJoint_ry" gear="20"/>
+    <motor name="RHipJoint_rz" joint="RHipJoint_rz" gear="20"/>
+
+    <motor name="RightUpLeg_rx" joint="RightUpLeg_rx" gear="20"/>
+    <motor name="RightUpLeg_ry" joint="RightUpLeg_ry" gear="20"/>
+    <motor name="RightUpLeg_rz" joint="RightUpLeg_rz" gear="20"/>
+
+    <motor name="RightLeg_rz" joint="RightLeg_rz" gear="20"/>
+    <motor name="RightLeg_ry" joint="RightLeg_ry" gear="20"/>
+    <motor name="RightLeg_rx" joint="RightLeg_rx" gear="20"/>
+
+    <motor name="RightFoot_rx" joint="RightFoot_rx" gear="20"/>
+    <motor name="RightFoot_ry" joint="RightFoot_ry" gear="20"/>
+    <motor name="RightFoot_rz" joint="RightFoot_rz" gear="20"/>
+
+
+    <motor name="RightToeBase_rx" joint="RightToeBase_rx" gear="20"/>
+    <motor name="RightToeBase_ry" joint="RightToeBase_ry" gear="20"/>
+    <motor name="RightToeBase_rz" joint="RightToeBase_rz" gear="20"/>
+
+    <motor name="LowerBack_rx" joint="LowerBack_rx" gear="20"/>
+    <motor name="LowerBack_ry" joint="LowerBack_ry" gear="20"/>
+    <motor name="LowerBack_rz" joint="LowerBack_rz" gear="20"/>
+
+
+    <motor name="Spine_rx" joint="Spine_rx" gear="20"/>
+    <motor name="Spine_ry" joint="Spine_ry" gear="20"/>
+    <motor name="Spine_rz" joint="Spine_rz" gear="20"/>
+
+
+    <motor name="Spine1_rx" joint="Spine1_rx" gear="20"/>
+    <motor name="Spine1_ry" joint="Spine1_ry" gear="20"/>
+    <motor name="Spine1_rz" joint="Spine1_rz" gear="20"/>
+
+    <motor name="Neck_rx" joint="Neck_rx" gear="20"/>
+    <motor name="Neck_ry" joint="Neck_ry" gear="20"/>
+    <motor name="Neck_rz" joint="Neck_rz" gear="20"/>
+
+    <motor name="Neck1_rx" joint="Neck1_rx" gear="20"/>
+    <motor name="Neck1_ry" joint="Neck1_ry" gear="20"/>
+    <motor name="Neck1_rz" joint="Neck1_rz" gear="20"/>
+
+    <motor name="Head_rx" joint="Head_rx" gear="20"/>
+    <motor name="Head_ry" joint="Head_ry" gear="20"/>
+    <motor name="Head_rz" joint="Head_rz" gear="20"/>
+
+
+    <motor name="LeftShoulder_rx" joint="LeftShoulder_rx" gear="20"/>
+    <motor name="LeftShoulder_ry" joint="LeftShoulder_ry" gear="20"/>
+    <motor name="LeftShoulder_rz" joint="LeftShoulder_rz" gear="20"/>
+
+
+    <motor name="LeftArm_rx" joint="LeftArm_rx" gear="20"/>
+    <motor name="LeftArm_ry" joint="LeftArm_ry" gear="20"/>
+    <motor name="LeftArm_rz" joint="LeftArm_rz" gear="20"/>
+
+
+    <motor name="LeftForeArm_rx" joint="LeftForeArm_rx" gear="20"/>
+    <motor name="LeftForeArm_ry" joint="LeftForeArm_ry" gear="20"/>
+    <motor name="LeftForeArm_rz" joint="LeftForeArm_rz" gear="20"/>
+
+    <motor name="LeftHand_rx" joint="LeftHand_rx" gear="20"/>
+    <motor name="LeftHand_ry" joint="LeftHand_ry" gear="20"/>
+    <motor name="LeftHand_rz" joint="LeftHand_rz" gear="20"/>
+
+    <motor name="LeftFingerBase_rx" joint="LeftFingerBase_rx" gear="20"/>
+    <motor name="LeftFingerBase_ry" joint="LeftFingerBase_ry" gear="20"/>
+    <motor name="LeftFingerBase_rz" joint="LeftFingerBase_rz" gear="20"/>
+
+
+    <motor name="LeftHandIndex1_rx" joint="LeftHandIndex1_rx" gear="20"/>
+    <motor name="LeftHandIndex1_ry" joint="LeftHandIndex1_ry" gear="20"/>
+    <motor name="LeftHandIndex1_rz" joint="LeftHandIndex1_rz" gear="20"/>
+
+    <motor name="LThumb_rx" joint="LThumb_rx" gear="20"/>
+    <motor name="LThumb_ry" joint="LThumb_ry" gear="20"/>
+    <motor name="LThumb_rz" joint="LThumb_rz" gear="20"/>
+
+    <motor name="RightShoulder_rx" joint="RightShoulder_rx" gear="20"/>
+    <motor name="RightShoulder_ry" joint="RightShoulder_ry" gear="20"/>
+    <motor name="RightShoulder_rz" joint="RightShoulder_rz" gear="20"/>
+
+    <motor name="RightArm_rx" joint="RightArm_rx" gear="20"/>
+    <motor name="RightArm_ry" joint="RightArm_ry" gear="20"/>
+    <motor name="RightArm_rz" joint="RightArm_rz" gear="20"/>
+
+    <motor name="RightForeArm_rx" joint="RightForeArm_rx" gear="20"/>
+    <motor name="RightForeArm_ry" joint="RightForeArm_ry" gear="20"/>
+    <motor name="RightForeArm_rz" joint="RightForeArm_rz" gear="20"/>
+
+    <motor name="RightHand_rx" joint="RightHand_rx" gear="20"/>
+    <motor name="RightHand_ry" joint="RightHand_ry" gear="20"/>
+    <motor name="RightHand_rz" joint="RightHand_rz" gear="20"/>
+
+
+    <motor name="RightFingerBase_rx" joint="RightFingerBase_rx" gear="20"/>
+    <motor name="RightFingerBase_ry" joint="RightFingerBase_ry" gear="20"/>
+    <motor name="RightFingerBase_rz" joint="RightFingerBase_rz" gear="20"/>
+
+    <motor name="RightHandIndex1_rx" joint="RightHandIndex1_rx" gear="20"/>
+    <motor name="RightHandIndex1_ry" joint="RightHandIndex1_ry" gear="20"/>
+    <motor name="RightHandIndex1_rz" joint="RightHandIndex1_rz" gear="20"/>
+
+    <motor name="RThumb_rx" joint="RThumb_rx" gear="20"/>
+    <motor name="RThumb_ry" joint="RThumb_ry" gear="20"/>
+    <motor name="RThumb_rz" joint="RThumb_rz" gear="20"/>
+
+
+
+  </actuator>
+</mujoco>

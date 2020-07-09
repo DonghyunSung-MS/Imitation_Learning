@@ -79,7 +79,7 @@ Kd = np.asarray([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, \
 class DYROSRedEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self, frameskip=100):
         #xml_path = os.path.join(os.getcwd(), 'assets','dyros_red','mujoco_model','dyros_red_robot_RL.xml')
-        xml_path = "/home/donghyun/RL_study/Imitation_Learning/gym-imit/gym_imit/assets/dyros_red/mujoco_model/dyros_red_robot_RL.xml"
+        xml_path = "/home/donghyun/RL_study/self_project/Imitation_Learning/gym-imit/gym_imit/assets/dyros_red/mujoco_model/dyros_red_robot_RL.xml"
         #xml_path = os.path.join(os.path.dirname(__file__), "assets", "dyros_red/mujoco_model/dyros_red_robot_RL.xml")
         mujoco_env.MujocoEnv.__init__(self, xml_path, frameskip)
         #mujoco_env.MujocoEnv.__init__(self, 'dyros_red.xml', frameskip)

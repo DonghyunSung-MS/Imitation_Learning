@@ -4,5 +4,7 @@ from setuptools import setup
 setup(name='gym_imit',
       version='0.0.1',
       install_requires=['gym',
-                        'mujoco_py']
+                        'mujoco_py',
+                        'dm_control',
+                        'numpy']
 )
